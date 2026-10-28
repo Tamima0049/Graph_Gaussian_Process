@@ -1,0 +1,8 @@
+# Tested with Python 3.11 and the versions below.
+# Install PyTorch first for your platform / CUDA version: https://pytorch.org
+torch>=2.2          # tested: 2.7.0 (CUDA 12.8) and CPU
+gpytorch==1.14
+torch-geometric==2.6.1
+scikit-learn==1.9.1
+pandas==3.1.0
+numpy==2.2.5
