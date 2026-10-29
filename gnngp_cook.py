@@ -44,6 +44,7 @@ import torch
 import torch.nn as nn
 from sklearn.neighbors import NearestNeighbors
 from torch_geometric.nn import SAGEConv
+from torch_geometric.utils import to_undirected
 
 # ── Settings (paper Table 2) ─────────────────────────────────────────────────
 K_NEIGHBOURS = 5        # k-NN graph connectivity
@@ -97,8 +98,10 @@ def build_knn_graph(train_xyz, test_xyz, k):
 
     Nodes 0..n_train-1 are training points, the rest are test points.
     Each training point links to its k nearest other training points, and
-    each test point links to its k nearest training points, so test points
-    receive information only from observed locations. Edges are unweighted.
+    each test point links to its k nearest training points (never to other
+    test points). Edges are unweighted and made two-way, so every node
+    receives messages from its neighbours: PyG passes messages from
+    edge_index[0] (source) to edge_index[1] (target).
     """
     n_train = len(train_xyz)
     edges = []
@@ -115,7 +118,8 @@ def build_knn_graph(train_xyz, test_xyz, k):
         for j in row:
             edges.append((n_train + i, j))
 
-    return torch.tensor(edges, dtype=torch.long).T     # shape [2, n_edges]
+    edge_index = torch.tensor(edges, dtype=torch.long).T     # shape [2, n_edges]
+    return to_undirected(edge_index, num_nodes=n_train + len(test_xyz))
 
 
 # ── GNN ──────────────────────────────────────────────────────────────────────
